@@ -1,0 +1,9 @@
+[install]
+# Supply-chain guard: install only versions that have been on npm for 3 days or more.
+# Most malicious releases are found and removed within that time.
+minimumReleaseAge = 259200
+
+[test]
+# Tests run with Vitest on Node.js: use `bun run test`.
+# `bun test` is Bun's own test runner. This root folder does not exist, so `bun test` stops with an error.
+root = "./use-bun-run-test"

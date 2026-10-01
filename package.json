@@ -1,0 +1,98 @@
+{
+  "name": "tsdown-kit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Starter kit for TypeScript npm packages: libraries, CLIs, or both. Built with Bun and tsdown.",
+  "keywords": [
+    "bun",
+    "cli",
+    "library",
+    "npm-package",
+    "starter",
+    "template",
+    "tsdown",
+    "typescript"
+  ],
+  "homepage": "https://github.com/DobroslavRadosavljevic/tsdown-kit#readme",
+  "bugs": {
+    "url": "https://github.com/DobroslavRadosavljevic/tsdown-kit/issues"
+  },
+  "license": "MIT",
+  "author": "Dobroslav Radosavljevič",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DobroslavRadosavljevic/tsdown-kit.git"
+  },
+  "funding": "https://github.com/sponsors/DobroslavRadosavljevic",
+  "bin": {
+    "tsdown-kit": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "build:update-api": "tsdown --update-snapshot",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "typecheck": "tsc && tsc -p src && tsc -p test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "docs": "automd && oxfmt README.md",
+    "knip": "knip",
+    "smoke": "node scripts/smoke.ts",
+    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run knip",
+    "changeset": "changeset",
+    "setup": "node scripts/setup.ts",
+    "prepack": "tsdown"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^22.20.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "automd": "^0.4.3",
+    "bellona": "^0.5.0",
+    "knip": "^6.39.0",
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0",
+    "oxlint-tsgolint": "^7.0.2003",
+    "publint": "^0.3.24",
+    "tsdown": "^0.23.0",
+    "tsnapi": "^1.5.0",
+    "typescript": "^7.0.2",
+    "ultracite": "^7.12.2",
+    "vitest": "^5.0.3"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "bun",
+      "version": "^1.4.0",
+      "onFail": "ignore"
+    },
+    "runtime": {
+      "name": "node",
+      "version": ">=22.18.0",
+      "onFail": "error"
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "bun@1.4.2"
+}

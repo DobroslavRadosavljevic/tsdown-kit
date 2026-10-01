@@ -1,0 +1,10 @@
+{
+  // Published code. tsdown reads this file: `isolatedDeclarations` lets it generate
+  // .d.ts files with Oxc, which is much faster than tsc.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "isolatedDeclarations": true,
+    "declaration": true
+  },
+  "include": ["."]
+}

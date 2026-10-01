@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "vitest": {
+    "entry": ["test/**/*.test.ts", "test/**/*.test-d.ts"]
+  },
+  "ignore": ["__snapshots__/**"]
+}

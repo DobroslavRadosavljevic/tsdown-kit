@@ -1,0 +1,43 @@
+# Runs the lint and format fixers on pull requests, then pushes a commit with the fixes.
+# Needs the autofix.ci GitHub App: https://github.com/apps/autofix-ci
+# The workflow name must stay `autofix.ci`: the app only accepts fixes from a workflow with that name.
+name: autofix.ci
+
+on:
+  # Off in the kit repo: only a manual run starts it. `bun run setup` removes the `#off ` prefixes.
+  workflow_dispatch:
+  #off pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - run: bun ci
+
+      # Errors that `--fix` cannot fix stay for the CI job to report. This job only commits fixes.
+      # It does not run the build: API snapshot changes need a person to review them.
+      - run: bun run lint:fix || true
+      - run: bun run docs
+      - run: bun run format
+
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4

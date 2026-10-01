@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  # Off in the kit repo: only a manual run starts it. `bun run setup` removes the `#off ` prefixes.
+  workflow_dispatch:
+  #off push:
+  #off   branches: [main]
+  #off pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      # tsdown and other tool CLIs run on Node.js.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+
+      - run: bun ci
+
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run test:coverage
+      # In CI, tsdown fails on warnings and runs publint + attw.
+      - run: bun run build
+      # Regenerates the automd blocks in README.md (badges, install commands, API docs).
+      - run: bun run docs
+      # Build and docs output that must be committed: package.json `exports`/`bin`,
+      # the API snapshots, and README.md.
+      - name: Generated files are committed
+        run: |
+          if [ -n "$(git status --porcelain -- package.json __snapshots__ README.md)" ]; then
+            git status --short -- package.json __snapshots__ README.md
+            git diff -- package.json __snapshots__ README.md
+            exit 1
+          fi
+      - run: bun run knip
+      # Known vulnerabilities in installed packages. Low and moderate ones are left to Dependabot.
+      - run: bun audit --audit-level=high
+
+  workflows:
+    name: Workflow security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Checks workflow syntax, expressions, and shell scripts.
+      - name: actionlint
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # 1.7.12
+        with:
+          args: -color
+
+      # Finds security problems: template injection, too-wide permissions, unpinned actions.
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with:
+          advanced-security: false
+
+  smoke:
+    name: Smoke (${{ matrix.runtime }} ${{ matrix.version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, runtime: node, version: 22 }
+          - { os: ubuntu-latest, runtime: node, version: 24 }
+          - { os: ubuntu-latest, runtime: node, version: 26 }
+          - { os: windows-latest, runtime: node, version: 24 }
+          - { os: macos-latest, runtime: node, version: 24 }
+          - { os: ubuntu-latest, runtime: bun, version: latest }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.runtime == 'node' && matrix.version || 24 }}
+
+      - run: bun ci
+
+      # Packs the tarball, installs it in an empty project, then imports it and runs its bin.
+      - if: matrix.runtime == 'node'
+        run: node scripts/smoke.ts
+      - if: matrix.runtime == 'bun'
+        run: bun scripts/smoke.ts
