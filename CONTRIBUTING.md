@@ -24,7 +24,10 @@ bun install
 | `bun run format`           | Formats with oxfmt. `format:check` only checks.                                                          |
 | `bun run knip`             | Finds unused files, exports, and dependencies.                                                           |
 | `bun run build:update-api` | Updates the API snapshots after an intended API change. Breaking changes need `TSNAPI_ALLOW_BREAKING=1`. |
-| `bun run docs`             | Fills in the automd blocks in `README.md`: badges, install commands, API docs from JSDoc.                |
+| `bun run readme`           | Fills in the automd blocks in `README.md`: badges, install commands, API docs from JSDoc.                |
+| `bun run docs:dev`         | Starts the docs site with hot reload. Installs its dependencies first.                                   |
+| `bun run docs:check`       | Type-checks the docs config, runs `blume doctor`, and checks every link.                                 |
+| `bun run docs:build`       | Builds the docs site to `docs/dist/` (strict).                                                           |
 | `bun run smoke`            | Packs the tarball, installs it in an empty project, imports it, runs its bin.                            |
 | `bun run check`            | Runs format check, lint, typecheck, tests, build, and knip. Run it before you push.                      |
 | `bun run changeset`        | Records a change for the next release.                                                                   |
@@ -43,12 +46,30 @@ scripts/package-json.ts   Typed package.json reader used by the scripts.
 scripts/setup.ts          One-time template setup. It deletes itself.
 skills/                   Agent skill shipped in the package (`skills/<name>/SKILL.md`).
 __snapshots__/tsnapi/     Public API snapshots. The build writes them; commit them.
+docs/                     Docs site (Blume): its own package.json and bun.lock. See docs/AGENTS.md.
+docs/content/             Docs pages (MDX). docs/blume.config.ts reads the root package.json.
 ```
 
 Code in `src/` must run on Node.js. oxlint blocks `Bun.*` and `bun:*` imports there.
 
 bellona reports have four lines: **Problem**, **Why**, **Fix**, **Avoid**. Apply the **Fix**.
 Parse JSON and other untyped input at the boundary (see `scripts/package-json.ts`) instead of using `as`.
+
+## Docs site
+
+The site in `docs/` documents the package. It is a separate project, so its 700 MB of Astro tooling never
+reaches the package's own install.
+
+- `bun run docs:dev` starts it at `http://localhost:4321`.
+- The site title, description, GitHub links, and changelog come from the root `package.json`.
+  Each GitHub release becomes a changelog entry.
+- The API reference reads `SlugifyOptions` straight from `src/slugify.ts`, so keep the JSDoc current.
+- The site publishes the agent skill from `skills/`, and serves `llms.txt` and a Markdown copy of each page.
+
+To publish it on GitHub Pages, set Settings → Pages → Source to **GitHub Actions**.
+The **Docs** workflow then deploys on every push to `main`. Vercel, Netlify, and Cloudflare Pages also work:
+set the root directory to `docs`, the build command to `bun run build`, and the output directory to `dist`.
+The build reads `../package.json`, `../src`, and `../skills`, so keep files outside the root directory in the build.
 
 ## Releasing
 

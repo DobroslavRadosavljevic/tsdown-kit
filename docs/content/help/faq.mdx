@@ -1,0 +1,34 @@
+---
+title: FAQ
+description: 'Answers to common questions about tsdown-kit, from module formats to non-ASCII slugs.'
+icon: circle-help
+---
+
+<Accordion>
+  <AccordionItem title="Why are non-ASCII letters kept?">
+    Transliteration is lossy and depends on the language: `ü` is `ue` in German but `u` in other languages. `tsdown-kit`
+    removes accent marks and keeps every letter, so no text turns into an empty slug. If you need ASCII, transliterate
+    before you call `slugify`, or encode the result with `encodeURIComponent`.
+  </AccordionItem>
+  {/* kit:library */}
+  <AccordionItem title="Can I use it with require()?">
+    Yes, on Node.js 22.12 and newer, which can `require()` an ES module. The package itself is ESM only.
+  </AccordionItem>
+  <AccordionItem title="Does it work in browsers and other runtimes?">
+    The `slugify` function uses only standard JavaScript (`String.prototype.normalize` and Unicode regular expressions),
+    so bundlers can include it in browser code. Bun can import it too.
+  </AccordionItem>
+  {/* /kit:library */}
+  <AccordionItem title="Are slugs unique?">
+    No. Different texts can give the same slug.{/* kit:library */} The [library guide](/guides/library#recipes) shows
+    how to add a counter.{/* /kit:library */}
+  </AccordionItem>
+  <AccordionItem title="How do coding agents learn the API?">
+    The npm package ships an agent skill in `skills/`. Tools like `skills-npm` link it into your agent's skills folder,
+    and this site publishes the same skill under `/.well-known/agent-skills/`. The site also serves `llms.txt` and a
+    Markdown copy of each page: add `.md` to any page URL.
+  </AccordionItem>
+  <AccordionItem title="Where is the changelog?">
+    Each GitHub release becomes an entry in the [changelog](/changelog), with an RSS feed when the site URL is set.
+  </AccordionItem>
+</Accordion>

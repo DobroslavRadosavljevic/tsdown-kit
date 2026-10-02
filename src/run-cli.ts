@@ -21,7 +21,7 @@ const BIN = name.replace(/^@[^/]+\//u, '')
 const HELP = `Usage: ${BIN} [options] <text...>
        echo "some text" | ${BIN} [options]
 
-Turns text into URL-safe slugs. Piped input is read line by line.
+Turns text into slugs for URLs, file names, and ids. Piped input is read line by line.
 
 Options:
   -s, --separator <text>  Text between words (default: "-")

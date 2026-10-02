@@ -7,7 +7,7 @@
  * Flags: --name, --description, --author, --repo (owner/name), --kind (library | cli | both), --yes
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { createInterface } from 'node:readline/promises'
@@ -138,18 +138,68 @@ function updatePackageJson(answers: Answers): void {
 }
 
 const UNUSED_FILES: Readonly<Record<Kind, readonly string[]>> = {
-  library: ['src/cli.ts', 'src/run-cli.ts', 'test/cli.test.ts'],
-  cli: ['src/index.ts', 'test/index.test-d.ts'],
+  library: [
+    'src/cli.ts',
+    'src/run-cli.ts',
+    'test/cli.test.ts',
+    'docs/content/guides/cli.mdx',
+    'docs/content/reference/cli.mdx',
+  ],
+  cli: ['src/index.ts', 'test/index.test-d.ts', 'docs/content/guides/library.mdx', 'docs/content/reference/api.mdx'],
   both: [],
 }
 
+// Docs pages mark kind-specific parts with `{/* kit:library */} … {/* /kit:library */}` (and `kit:cli`).
+// A marker on its own line removes the whole line; a marker inside a line leaves the line breaks alone,
+// so a `:::` callout fence after it stays on its own line.
+const KIT_BLOCKS = {
+  library: [
+    /^[ \t]*\{\/\* kit:library \*\/\}[ \t]*\n[\s\S]*?^[ \t]*\{\/\* \/kit:library \*\/\}[ \t]*\n/gmu,
+    /\{\/\* kit:library \*\/\}[\s\S]*?\{\/\* \/kit:library \*\/\}/gu,
+  ],
+  cli: [
+    /^[ \t]*\{\/\* kit:cli \*\/\}[ \t]*\n[\s\S]*?^[ \t]*\{\/\* \/kit:cli \*\/\}[ \t]*\n/gmu,
+    /\{\/\* kit:cli \*\/\}[\s\S]*?\{\/\* \/kit:cli \*\/\}/gu,
+  ],
+}
+const KIT_MARKER_LINE = /^[ \t]*\{\/\* \/?kit:(?:library|cli) \*\/\}[ \t]*\n/gmu
+const KIT_MARKER = /\{\/\* \/?kit:(?:library|cli) \*\/\}/gu
+// Places in the docs that show the command name (`bin`), which drops the npm scope.
+const BIN_CONTEXTS = [
+  '# tsdown-kit: ',
+  "Run 'tsdown-kit --help'",
+  'The `tsdown-kit` command',
+  '"slug": "tsdown-kit"',
+  'tsdown-kit [options]',
+]
+
 function removeUnusedSources(kind: Kind): void {
   for (const relative of UNUSED_FILES[kind]) rmSync(file(relative), { force: true })
+  // A CLI-only package has no public API, so it has no API snapshots for knip to ignore.
+  if (kind === 'cli') {
+    const knip = readFileSync(file('knip.json'), 'utf-8')
+    writeFileSync(file('knip.json'), knip.replace(/\s*"__snapshots__\/\*\*",?/u, ''))
+  }
+}
+
+/** Docs pages: drops the parts for a package kind you did not pick, and names your package. */
+function updateDocsContent(answers: Answers): void {
+  const bin = answers.name.replace(/^@[^/]+\//u, '')
+  const dropped = { library: KIT_BLOCKS.cli, cli: KIT_BLOCKS.library, both: [] }[answers.kind]
+  const content = file('docs/content')
+  const pages = readdirSync(content, { recursive: true, encoding: 'utf-8' }).filter((page) => page.endsWith('.mdx'))
+  for (const page of pages) {
+    let text = readFileSync(path.join(content, page), 'utf-8')
+    for (const block of dropped) text = text.replaceAll(block, '')
+    text = text.replaceAll(KIT_MARKER_LINE, '').replaceAll(KIT_MARKER, '')
+    for (const context of BIN_CONTEXTS) text = text.replaceAll(context, context.replace('tsdown-kit', bin))
+    writeFileSync(path.join(content, page), text.replaceAll('tsdown-kit', answers.name))
+  }
 }
 
 /** Turns on CI, Release, and Dependabot, which are off in the kit repo. */
 function enableWorkflows(): void {
-  for (const workflow of ['ci', 'release', 'changeset-status', 'autofix'].map(
+  for (const workflow of ['ci', 'release', 'changeset-status', 'autofix', 'docs'].map(
     (name) => `.github/workflows/${name}.yml`,
   )) {
     const lines = readFileSync(file(workflow), 'utf-8').split('\n')
@@ -167,7 +217,7 @@ function enableWorkflows(): void {
 /** Removes the lines of the agent and contributor docs that name a deleted file. */
 function pruneDocs(kind: Kind): void {
   const removed = [...UNUSED_FILES[kind], 'scripts/setup.ts']
-  for (const doc of ['AGENTS.md', 'CONTRIBUTING.md']) {
+  for (const doc of ['AGENTS.md', 'CONTRIBUTING.md', 'docs/AGENTS.md']) {
     const lines = readFileSync(file(doc), 'utf-8').split('\n')
     const kept = lines.filter((line) => !removed.some((relative) => line.includes(relative)))
     writeFileSync(file(doc), kept.join('\n'))
@@ -208,7 +258,8 @@ function skill(answers: Answers, name: string): string {
   const hasCli = answers.kind !== 'library'
   const bin = answers.name.replace(/^@[^/]+\//u, '')
   const sections = [
-    `---\nname: ${name}\ndescription: Use the ${answers.name} package. TODO: say what it does and when an agent should use it.\n---`,
+    // Quote the description: YAML reads an unquoted `: ` inside a value as a new key.
+    `---\nname: ${name}\ndescription: "Use the ${answers.name} package. TODO - say what it does and when an agent should use it."\n---`,
     `# ${answers.name}`,
     `TODO: tell coding agents how to use ${answers.name}: the main API, the options, the errors, and the limits.`,
     `Install it with \`npm install ${answers.name}\`. It is ESM only and needs Node.js 22.12 or newer.`,
@@ -234,7 +285,7 @@ function writeSkill(answers: Answers): void {
 }
 
 /**
- * The package README. Blocks between `<!-- automd:… -->` markers are filled in by `bun run docs`
+ * The package README. Blocks between `<!-- automd:… -->` markers are filled in by `bun run readme`
  * (automd): npm badges, install commands for each package manager, and API docs from JSDoc.
  */
 function readme(answers: Answers): string {
@@ -292,6 +343,7 @@ if (errors.length > 0) {
 updatePackageJson(answers)
 removeUnusedSources(answers.kind)
 pruneDocs(answers.kind)
+updateDocsContent(answers)
 enableWorkflows()
 updateChangesetConfig(answers.repo)
 updateFunding(answers.repo)
@@ -306,7 +358,7 @@ rmSync(file('__snapshots__'), { recursive: true, force: true })
 // Refresh the lockfile (it stores the package name), regenerate exports/bin, sort package.json.
 run('bun', ['install'])
 run('bun', ['run', 'build'])
-run('bun', ['run', 'docs'])
+run('bun', ['run', 'readme'])
 run('bun', ['run', 'format'])
 
 console.log(`

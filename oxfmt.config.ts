@@ -8,5 +8,16 @@ export default defineConfig({
   arrowParens: 'always',
   sortImports: {},
   sortPackageJson: true,
-  ignorePatterns: ['dist/**', 'coverage/**', '__snapshots__/**', 'bun.lock', 'CHANGELOG.md', '.changeset/*.md'],
+  ignorePatterns: [
+    'dist/**',
+    'coverage/**',
+    '__snapshots__/**',
+    'docs/.blume/**',
+    'docs/.blume-verify/**',
+    'docs/dist/**',
+    'docs/bun.lock',
+    'bun.lock',
+    'CHANGELOG.md',
+    '.changeset/*.md',
+  ],
 })

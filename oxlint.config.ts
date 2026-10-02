@@ -22,7 +22,8 @@ export default defineConfig({
   options: { typeAware: true },
   // Published code runs on Node.js, not in browsers (Ultracite's core turns `browser` on).
   env: { browser: false, node: true, es2024: true },
-  ignorePatterns: [...(core.ignorePatterns ?? []), 'dist/**', 'coverage/**', '__snapshots__/**'],
+  // The docs site is a separate project with its own dependencies; `bun run docs:check` covers it.
+  ignorePatterns: [...(core.ignorePatterns ?? []), 'dist/**', 'coverage/**', '__snapshots__/**', 'docs/**'],
   rules: {
     // ---- bellona: all bl-js rules ----------------------------------------------------------------
     'bl-js/no-chained-type-assertions': 'error',

@@ -1,0 +1,78 @@
+---
+title: API reference
+description: 'The full public API of tsdown-kit, the slugify function and the SlugifyOptions type.'
+icon: braces
+---
+
+The package has one import path, `tsdown-kit`, with these exports:
+
+| Export           | Kind     | Summary                        |
+| ---------------- | -------- | ------------------------------ |
+| `slugify`        | function | Turns text into a slug.        |
+| `SlugifyOptions` | type     | The options `slugify` accepts. |
+
+## slugify
+
+```ts
+function slugify(input: string, options?: SlugifyOptions): string
+```
+
+Turns text into a slug for URLs, file names, or ids. See [How it works](/guides/how-it-works) for the exact steps.
+
+### Parameters
+
+<TypeTable
+  type={{
+    input: {
+      type: 'string',
+      required: true,
+      description: 'The text to turn into a slug. Any string is valid.',
+    },
+    options: {
+      type: 'SlugifyOptions',
+      typeDescriptionLink: '#slugifyoptions',
+      description: 'Separator, letter case, and length limit. Every field is optional.',
+    },
+  }}
+/>
+
+### Returns
+
+`string`: the slug. It is empty when the input has no letters or digits.
+
+### Throws
+
+`RangeError` when `options.maxLength` is not a non-negative integer.
+
+### Example
+
+```ts ts2js
+import { slugify } from 'tsdown-kit'
+
+slugify('Héllo, Wörld!') // 'hello-world'
+slugify('TypeScript 7 is here', { separator: '_', maxLength: 12 }) // 'typescript_7'
+```
+
+## SlugifyOptions
+
+```ts
+import type { SlugifyOptions } from 'tsdown-kit'
+```
+
+This table comes from the TypeScript source and its JSDoc, so it always matches the published types.
+
+<AutoTypeTable path="../src/slugify.ts" name="SlugifyOptions" />
+
+<Visibility for="agents">
+
+| Field       | Type      | Default | Description                                                                                                             |
+| ----------- | --------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `separator` | `string`  | `'-'`   | Text placed between words. Used as given, also when `lowercase` is true.                                                |
+| `lowercase` | `boolean` | `true`  | Convert the words to lower case.                                                                                        |
+| `maxLength` | `number`  | none    | Maximum length in UTF-16 code units. Never ends with a separator or splits a character. Must be a non-negative integer. |
+
+</Visibility>
+
+## Stability
+
+Every export on this page is part of the public API and follows semantic versioning. A breaking change ships only in a new major version.

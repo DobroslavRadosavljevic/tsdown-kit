@@ -1,0 +1,121 @@
+---
+title: Use the library
+description: 'Call slugify from TypeScript or JavaScript, and control the separator, the letter case, and the length.'
+icon: code
+---
+
+`slugify(input, options?)` takes a string and returns its slug. It has no side effects, so you can call it anywhere: in a server, in a build script, or in a browser bundle.
+
+```ts ts2js
+import { slugify } from 'tsdown-kit'
+
+slugify('Héllo, Wörld!') // 'hello-world'
+```
+
+## Separators
+
+The default separator is `-`. Set `separator` to any text, including an empty string:
+
+| Call                                           | Result          |
+| ---------------------------------------------- | --------------- |
+| `slugify('one two three')`                     | `one-two-three` |
+| `slugify('one two three', { separator: '_' })` | `one_two_three` |
+| `slugify('one two three', { separator: '.' })` | `one.two.three` |
+| `slugify('one two three', { separator: '' })`  | `onetwothree`   |
+
+The separator is used as you give it. With `lowercase: true`, only the words become lower case, so `{ separator: 'X' }` gives `helloXworld`.
+
+## Letter case
+
+The words are lower case by default. Set `lowercase: false` to keep the case of the input:
+
+```ts ts2js
+slugify('Hello World') // 'hello-world'
+slugify('Hello World', { lowercase: false }) // 'Hello-World'
+```
+
+## Length limit
+
+`maxLength` cuts the slug to a number of characters. The cut follows two rules:
+
+- **No separator at the end.** If the cut lands on a separator, the separator goes too.
+- **No broken characters.** A character that JavaScript stores as two code units (some CJK letters, for example) stays whole or goes away.
+
+| Call                                                        | Result         |
+| ----------------------------------------------------------- | -------------- |
+| `slugify('The quick brown fox', { maxLength: 9 })`          | `the-quick`    |
+| `slugify('The quick brown fox', { maxLength: 10 })`         | `the-quick`    |
+| `slugify('The quick brown fox', { maxLength: 12 })`         | `the-quick-br` |
+| `slugify('banana split', { separator: 'a', maxLength: 6 })` | `banana`       |
+
+:::note
+`maxLength` counts UTF-16 code units, the same unit as `string.length`. So `slugify(text, { maxLength: n }).length` is never more than `n`.
+:::
+
+## Errors
+
+`slugify` throws a `RangeError` when `maxLength` is not a non-negative integer:
+
+```ts ts2js
+try {
+  slugify('text', { maxLength: -1 })
+} catch (error) {
+  if (error instanceof RangeError) {
+    console.error(error.message) // 'maxLength must be a non-negative integer, received -1'
+  }
+}
+```
+
+Every other input is valid. An input with no letters or digits, like `'---'`, gives an empty string.
+
+## Recipes
+
+<Tabs>
+  <Tab title="Unique slugs">
+    Add a counter when a slug is already in use:
+
+```ts ts2js
+import { slugify } from 'tsdown-kit'
+
+function uniqueSlug(title: string, taken: Set<string>): string {
+  const base = slugify(title) || 'untitled'
+  let slug = base
+  for (let n = 2; taken.has(slug); n += 1) slug = `${base}-${n}`
+  taken.add(slug)
+  return slug
+}
+```
+
+  </Tab>
+  <Tab title="File names">
+    Keep the extension out of the slug, then add it back:
+
+```ts ts2js
+import path from 'node:path'
+import { slugify } from 'tsdown-kit'
+
+function safeFileName(name: string): string {
+  const { name: base, ext } = path.parse(name)
+  return `${slugify(base, { maxLength: 60 }) || 'file'}${ext.toLowerCase()}`
+}
+
+safeFileName('Quarterly Report (Final).PDF') // 'quarterly-report-final.pdf'
+```
+
+  </Tab>
+  <Tab title="Heading anchors">
+    Make ids for headings in generated HTML:
+
+```ts ts2js
+import { slugify } from 'tsdown-kit'
+
+const id = slugify('Getting Started: Install', { maxLength: 40 }) // 'getting-started-install'
+```
+
+  </Tab>
+</Tabs>
+
+## Next steps
+
+- See every option and its type in the [API reference](/reference/api).
+- Read [How it works](/guides/how-it-works) for the exact rules on accents and other scripts.

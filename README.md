@@ -9,6 +9,7 @@
 [![tsdown 0.23](https://img.shields.io/badge/tsdown-0.23-FF7E17)](https://tsdown.dev)
 [![Vitest 5](https://img.shields.io/badge/Vitest-5.0-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
 [![oxlint](https://img.shields.io/badge/lint-oxlint-00A3FF)](https://oxc.rs/docs/guide/usage/linter)
+[![Docs: Blume](https://img.shields.io/badge/docs-Blume-8B5CF6)](https://useblume.dev)
 <br>
 [![Node.js 22.12+](https://img.shields.io/badge/Node.js-%E2%89%A522.12-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![ESM only](https://img.shields.io/badge/module-ESM%20only-F7DF1E)](https://nodejs.org/api/esm.html)
@@ -32,7 +33,8 @@ Then it does the rest:
 
 - 🧹 Removes the files your package kind does not need.
 - 📝 Writes your `README.md`, `LICENSE`, `FUNDING.yml`, and a starter agent skill in `skills/`.
-- 🔛 Turns on CI, the release workflow, the changeset status comment, autofix, and Dependabot.
+- 📚 Trims the docs site to your package kind and puts your package name in every page.
+- 🔛 Turns on CI, the release workflow, the docs deploy, the changeset status comment, autofix, and Dependabot.
 - 🏗️ Rebuilds, writes fresh API snapshots, fills in the README, then deletes itself.
 
 Skip the questions with flags:
@@ -59,9 +61,10 @@ After `setup`, swap in your own code:
 4. 🤖 **Rewrite the agent skill** in `skills/<your-package>/SKILL.md`. `setup` writes only a stub
    with TODOs. Coding agents in your users' projects read this file to learn your API.
    If you forget, their agents will try to slugify everything. 🙃
-5. 📝 Add JSDoc to your exports, then run `bun run docs` to update the API section of the README.
-6. ✅ Run `bun run check`, then commit.
-7. 🚀 Before the first publish, follow [First release](./CONTRIBUTING.md#first-release).
+5. 📝 Add JSDoc to your exports, then run `bun run readme` to update the API section of the README.
+6. 📚 Rewrite the pages in `docs/content/` for your API, then check them with `bun run docs:dev`.
+7. ✅ Run `bun run check` and `bun run docs:check`, then commit.
+8. 🚀 Before the first publish, follow [First release](./CONTRIBUTING.md#first-release).
 
 ## ✨ What you get
 
@@ -97,6 +100,9 @@ After `setup`, swap in your own code:
   your JSDoc comments.
 - 📋 **Repo files ready to go.** `SECURITY.md`, issue forms, a pull request template, `FUNDING.yml`,
   `.node-version`, and `devEngines` in `package.json`.
+- 📚 **A docs site.** [Blume](https://useblume.dev) builds it from Markdown in `docs/content/`: search,
+  guides, an API reference generated from your JSDoc, a changelog from your GitHub releases, `llms.txt`,
+  and a Markdown copy of each page. A workflow deploys it to GitHub Pages.
 - 🤖 **Ready for coding agents.** `AGENTS.md` lists the commands, rules, and limits for AI agents
   that work on your package. The package also ships an agent skill in `skills/`, so agents in
   projects that install it learn your API. The smoke test checks that the skill is in the tarball.
@@ -118,6 +124,7 @@ After `setup`, swap in your own code:
 | [automd](https://automd.unjs.io)                                            | 0.4     | Fills in README badges, install commands, and API docs       |
 | [publint](https://publint.dev) + [attw](https://arethetypeswrong.github.io) | latest  | Check the package and its types on every build               |
 | [Changesets](https://changesets.dev)                                        | 3       | Bumps versions, writes the changelog, opens release PRs      |
+| [Blume](https://useblume.dev)                                               | 2.0     | Builds the docs site in `docs/` (on Astro)                   |
 
 ## 🏃 Commands
 
@@ -130,7 +137,9 @@ After `setup`, swap in your own code:
 | `bun run check`            | Runs format check, lint, types, tests, build, and knip        |
 | `bun run smoke`            | Tests the packed tarball on Node.js                           |
 | `bun run build:update-api` | Accepts an intended public API change (updates the snapshots) |
-| `bun run docs`             | Updates the automd blocks in `README.md`                      |
+| `bun run readme`           | Updates the automd blocks in `README.md`                      |
+| `bun run docs:dev`         | Starts the docs site at `localhost:4321`                      |
+| `bun run docs:check`       | Checks the docs config, content, and links                    |
 | `bun run changeset`        | Records a change for the next release                         |
 
 [CONTRIBUTING.md](./CONTRIBUTING.md) has all scripts and the release setup.
@@ -147,13 +156,15 @@ test/                  Vitest tests and type tests (*.test-d.ts)
 skills/<name>/         Agent skill shipped in the package: rewrite it for your API
 __snapshots__/tsnapi/  Public API snapshots: the build writes them, you commit them
 scripts/               setup (runs once), smoke test, package.json reader
-.github/               CI, release, changeset status, autofix, Dependabot, issue forms
+.github/               CI, release, docs deploy, changeset status, autofix, Dependabot, issue forms
+docs/                  Docs site (Blume): pages in docs/content/, a separate project
 AGENTS.md              Rules and commands for coding agents
 ```
 
 ## 🚦 CI in the kit repo
 
-CI, the release workflow, the changeset status comment, autofix, and Dependabot are **off** in this repo.
+CI, the release workflow, the docs deploy, the changeset status comment, autofix, and Dependabot are
+**off** in this repo.
 A push starts nothing.
 You can still start a workflow by hand from the GitHub **Actions** tab.
 

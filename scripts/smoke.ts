@@ -103,6 +103,14 @@ try {
     if (lines[0] !== '---' || !lines.includes(`name: ${skill}`)) {
       throw new Error(`skills/${skill}/SKILL.md needs frontmatter with 'name: ${skill}'`)
     }
+    // An unquoted value with `: ` in it is invalid YAML, and agents then skip the skill.
+    const end = lines.indexOf('---', 1)
+    const badLine = lines.slice(1, end).find((line) => /^[\w-]+: (?!['"]).*: /u.test(line))
+    if (end === -1 || !lines.some((line) => line.startsWith('description: ')) || badLine !== undefined) {
+      throw new Error(
+        `skills/${skill}/SKILL.md frontmatter needs a quoted 'description' (check: ${badLine ?? 'missing'})`,
+      )
+    }
     console.log(`✔ skill '${skill}'`)
   }
 

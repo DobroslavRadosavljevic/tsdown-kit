@@ -6,6 +6,7 @@
 - Bun 1.4 is the package manager and script runner. Do not use npm, pnpm, or yarn to install.
 - tsdown 0.23 builds `dist/`. Vitest 5 runs tests on Node.js.
 - oxlint 1.86 (Ultracite core + vitest presets, all categories, type-aware, bellona `bl-js`) and oxfmt.
+- Docs site: Blume 2 (on Astro) in `docs/`. It is a separate project with its own `package.json` and `bun.lock`.
 
 ## Commands
 
@@ -19,6 +20,8 @@
 - Build: `bun run build`
 - Packed-tarball test on Node.js: `bun run smoke`
 - Everything CI checks: `bun run check`
+- README automd blocks: `bun run readme`
+- Docs site: `bun run docs:dev` (preview), `bun run docs:check` (types, config, links), `bun run docs:build`
 
 Never run `bun test`. It starts Bun's own test runner, not Vitest.
 
@@ -59,6 +62,7 @@ Hard rule for all agent text to humans. Also covers names in the codebase. Do no
 | `scripts/smoke.ts`        | Packs, installs, imports, and runs the real tarball.                  |
 | `scripts/package-json.ts` | Decoder for package.json. Copy its pattern for untyped input.         |
 | `scripts/setup.ts`        | One-time template setup. It deletes itself after it runs.             |
+| `docs/`                   | Docs site (Blume). Rules in `docs/AGENTS.md`.                         |
 
 ## Project rules
 
@@ -67,8 +71,8 @@ Hard rule for all agent text to humans. Also covers names in the codebase. Do no
 - Export functions from `src/` with explicit return types (`isolatedDeclarations`).
 - Do not edit `exports` or `bin` in `package.json` by hand. `bun run build` writes them; commit the result.
 - A public API change fails the build once and rewrites `__snapshots__/tsnapi/`. Commit that diff only if the change is intended. Ask first before a breaking change (`TSNAPI_ALLOW_BREAKING=1`).
-- When the public API or CLI changes, update `skills/*/SKILL.md` and JSDoc, then run `bun run docs`.
-- Do not edit text between `<!-- automd:… -->` and `<!-- /automd -->` in `README.md`; `bun run docs` writes it.
+- When the public API or CLI changes, update JSDoc, `skills/*/SKILL.md`, and the pages in `docs/content/`, then run `bun run readme`.
+- Do not edit text between `<!-- automd:… -->` and `<!-- /automd -->` in `README.md`; `bun run readme` writes it.
 - To add an import path, add the file to `entry` in `tsdown.config.ts`.
 - Parse `JSON.parse` and other untyped data at the boundary into a named type. Do not cast with `as`.
 - Each `as T` needs a `// SAFETY:` comment that explains why it is safe.
@@ -82,6 +86,7 @@ Hard rule for all agent text to humans. Also covers names in the codebase. Do no
 - Add or update tests in `test/` for each behavior change. Put type tests for the public API in `test/*.test-d.ts` (`expectTypeOf`).
 - Coverage thresholds are 90% for lines, branches, functions, and statements (`vitest.config.ts`).
 - Run `bun run check` before you finish. Run `bun run smoke` when you change the build, `exports`, `bin`, or the CLI entry.
+- Run `bun run docs:check` and `bun run docs:build` when you change `docs/`, the public API, or the CLI.
 
 ## Releases
 
@@ -104,3 +109,4 @@ Hard rule for all agent text to humans. Also covers names in the codebase. Do no
 | Lint policy and rule exceptions | `oxlint.config.ts` |
 | Build and package fields        | `tsdown.config.ts` |
 | Reporting vulnerabilities       | `SECURITY.md`      |
+| Docs site rules                 | `docs/AGENTS.md`   |

@@ -1,0 +1,41 @@
+---
+title: CLI reference
+description: 'Every flag, input rule, and exit code of the tsdown-kit command.'
+icon: square-terminal
+---
+
+## Synopsis
+
+```sh
+tsdown-kit [options] <text...>
+<command> | tsdown-kit [options]
+```
+
+## Input
+
+- **Arguments.** All positional arguments join with single spaces into one text, which gives one slug.
+- **Standard input.** With no arguments, the command reads standard input to the end. Each non-empty line gives one slug. Both `\n` and `\r\n` line endings work.
+- **No input.** With no arguments and an interactive terminal on standard input, the command stops with a usage error.
+
+## Options
+
+| Option         | Short | Value             | Default | Description                                                              |
+| -------------- | ----- | ----------------- | ------- | ------------------------------------------------------------------------ |
+| `--separator`  | `-s`  | text              | `-`     | Text between words.                                                      |
+| `--max-length` | `-m`  | digits, like `40` | none    | Maximum slug length. Values like `1e2`, `0x10`, or `-1` are errors.      |
+| `--keep-case`  |       |                   | off     | Keep the letter case of the input.                                       |
+| `--help`       | `-h`  |                   |         | Print the help to standard output and exit with `0`.                     |
+| `--version`    | `-v`  |                   |         | Print the version to standard output and exit with `0`.                  |
+| `--`           |       |                   |         | End of options. Everything after it is text, even if it starts with `-`. |
+
+## Output
+
+One slug per line on standard output, each followed by a newline. Errors go to standard error.
+
+## Exit codes
+
+| Code | Meaning                                                                         |
+| ---- | ------------------------------------------------------------------------------- |
+| `0`  | Success.                                                                        |
+| `1`  | An unexpected error.                                                            |
+| `2`  | A usage error: an unknown option, no input text, or a bad `--max-length` value. |

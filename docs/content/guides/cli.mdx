@@ -1,0 +1,117 @@
+---
+title: Use the CLI
+description: 'Slugify arguments or piped lines from the command line, in scripts, and in CI.'
+icon: terminal
+---
+
+The `tsdown-kit` command slugifies text from its arguments or from standard input. It has no dependencies and starts fast.
+
+## Arguments
+
+All arguments join into one text with spaces, then become one slug:
+
+```sh
+npx tsdown-kit Hello World
+# hello-world
+
+npx tsdown-kit "Héllo, Wörld!"
+# hello-world
+```
+
+Quote the text when it has characters your shell reads, like `!`, `&`, or `#`.
+
+## Piped input
+
+With no arguments, the command reads standard input. Each line becomes one slug, and empty lines are skipped:
+
+```sh
+printf 'First post\nSecond Post\n\nThird!\n' | npx tsdown-kit
+# first-post
+# second-post
+# third
+```
+
+Windows line endings (`\r\n`) work too.
+
+## Options
+
+| Option               | Short | Default | Effect                             |
+| -------------------- | ----- | ------- | ---------------------------------- |
+| `--separator <text>` | `-s`  | `-`     | Text between words.                |
+| `--max-length <n>`   | `-m`  | none    | Maximum slug length. Digits only.  |
+| `--keep-case`        |       | off     | Keep the letter case of the input. |
+| `--help`             | `-h`  |         | Show the help and exit.            |
+| `--version`          | `-v`  |         | Show the version and exit.         |
+
+```sh
+npx tsdown-kit -s _ -m 12 --keep-case "Hello Big World"
+# Hello_Big_Wo
+```
+
+To slugify a text that starts with `-`, put it after `--`:
+
+```sh
+npx tsdown-kit -- "-5 degrees"
+# 5-degrees
+```
+
+## Exit codes
+
+| Code | Meaning                                                                         |
+| ---- | ------------------------------------------------------------------------------- |
+| `0`  | Success. The slugs are on standard output.                                      |
+| `1`  | An unexpected error. Node.js prints the stack trace.                            |
+| `2`  | A usage error: an unknown option, no input text, or a bad `--max-length` value. |
+
+Usage errors print a short message and a hint to standard error, so standard output stays clean:
+
+```sh
+npx tsdown-kit --max-length ten "Hello"
+# tsdown-kit: --max-length must be a non-negative integer, received 'ten'
+# Run 'tsdown-kit --help' for usage.
+echo $?
+# 2
+```
+
+## In scripts
+
+<Tabs>
+  <Tab title="Bash">
+
+```sh
+title="Release Notes: v2.0"
+file="$(npx tsdown-kit "$title").md"
+echo "$file"   # release-notes-v2-0.md
+```
+
+  </Tab>
+  <Tab title="package.json">
+
+```json
+{
+  "scripts": {
+    "slug": "tsdown-kit"
+  }
+}
+```
+
+Then run `npm run slug -- "Some Title"`.
+
+  </Tab>
+  <Tab title="GitHub Actions">
+
+```yaml
+- name: Make a branch name
+  # Pass untrusted text through an environment variable, never inline in `run`.
+  env:
+    TITLE: ${{ github.event.issue.title }}
+  run: echo "branch=docs/$(npx --yes tsdown-kit "$TITLE")" >> "$GITHUB_OUTPUT"
+```
+
+  </Tab>
+</Tabs>
+
+## Next steps
+
+- See every flag in the [CLI reference](/reference/cli).
+- Read [How it works](/guides/how-it-works) for the exact rules on accents and other scripts.

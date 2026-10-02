@@ -11,6 +11,17 @@ updates:
     cooldown:
       default-days: 7
 
+  - package-ecosystem: bun
+    directory: /docs
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0 # Off in the kit repo. `bun run setup` removes this line.
+    groups:
+      docs:
+        patterns: ['*']
+    cooldown:
+      default-days: 7
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

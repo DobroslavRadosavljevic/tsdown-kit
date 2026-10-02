@@ -1,0 +1,3 @@
+[install]
+# Same supply-chain guard as the package: install only versions that are 3 days old or older.
+minimumReleaseAge = 259200

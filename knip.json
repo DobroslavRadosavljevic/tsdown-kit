@@ -3,5 +3,5 @@
   "vitest": {
     "entry": ["test/**/*.test.ts", "test/**/*.test-d.ts"]
   },
-  "ignore": ["__snapshots__/**"]
+  "ignore": ["__snapshots__/**", "docs/**"]
 }

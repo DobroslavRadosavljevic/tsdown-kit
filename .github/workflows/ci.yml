@@ -41,7 +41,7 @@ jobs:
       # In CI, tsdown fails on warnings and runs publint + attw.
       - run: bun run build
       # Regenerates the automd blocks in README.md (badges, install commands, API docs).
-      - run: bun run docs
+      - run: bun run readme
       # Build and docs output that must be committed: package.json `exports`/`bin`,
       # the API snapshots, and README.md.
       - name: Generated files are committed
@@ -54,6 +54,33 @@ jobs:
       - run: bun run knip
       # Known vulnerabilities in installed packages. Low and moderate ones are left to Dependabot.
       - run: bun audit --audit-level=high
+
+  docs:
+    name: Docs site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+
+      - run: bun ci
+      - run: bun ci --cwd docs
+      # Types of the docs config, Blume config and content diagnostics, and broken links.
+      - run: bun run docs:check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      # A strict build: frontmatter errors fail it.
+      - run: bun run --cwd docs build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   workflows:
     name: Workflow security

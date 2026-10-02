@@ -1,0 +1,82 @@
+---
+title: Installation
+description: 'Install tsdown-kit with your package manager, and check the Node.js and module requirements.'
+icon: download
+---
+
+## Requirements
+
+- **Node.js 22.12 or newer.** The package targets the Node.js versions that are still supported.
+- **ES modules.** The package is ESM only. CommonJS code can still load it with `require()`, see below.
+
+## Install
+
+{/* kit:library */}
+
+```package-install
+npm install tsdown-kit
+```
+
+{/* /kit:library */}
+{/* kit:cli */}
+
+To run the CLI once, without an install, use your package runner:
+
+```sh
+npx tsdown-kit "Hello World"
+```
+
+To keep the CLI on your machine, install it globally:
+
+```sh
+npm install --global tsdown-kit
+```
+
+{/* /kit:cli */}
+
+## TypeScript
+
+The package ships its own type declarations. You do not install a separate `@types` package.
+
+{/* kit:library */}
+
+```ts
+import { slugify, type SlugifyOptions } from 'tsdown-kit'
+
+const options: SlugifyOptions = { separator: '_' }
+slugify('Hello World', options) // 'hello_world'
+```
+
+The package uses the `exports` field, so set `moduleResolution` in `tsconfig.json` to `bundler`, `node16`, or `nodenext`.
+The old `node10` resolution does not read `exports` and cannot find the types.
+
+## CommonJS
+
+Node.js 22.12 and newer can `require()` an ES module. So CommonJS code can load the package as usual:
+
+```js
+const { slugify } = require('tsdown-kit')
+```
+
+{/* /kit:library */}
+
+:::tip
+Check that the install worked.
+
+{/* kit:cli */}
+
+CLI: run `npx tsdown-kit --version`.
+
+{/* /kit:cli */}
+
+{/* kit:library */}
+
+Library: run `node -e "import('tsdown-kit').then((m) => console.log(m.slugify('It works')))"`.
+
+{/* /kit:library */}
+
+:::
+
+## Next steps
+
+Continue with the [Quickstart](/getting-started/quickstart).

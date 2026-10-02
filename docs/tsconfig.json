@@ -1,0 +1,6 @@
+{
+  // Type-checks the docs config and folder meta with the package's strict settings.
+  // Run it with `bun run docs:check` after `bun install --cwd docs`.
+  "extends": "../tsconfig.json",
+  "include": ["blume.config.ts", "content/**/meta.ts"]
+}

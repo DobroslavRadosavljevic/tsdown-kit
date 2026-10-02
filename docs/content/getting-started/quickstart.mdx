@@ -1,0 +1,94 @@
+---
+title: Quickstart
+description: 'Make your first slug with tsdown-kit, then change the separator, the letter case, and the length.'
+icon: rocket
+---
+
+This page takes about two minutes. You need Node.js 22.12 or newer.
+
+{/* kit:library */}
+
+## From code
+
+<Steps>
+  <Step title="Install the package">
+
+```package-install
+npm install tsdown-kit
+```
+
+  </Step>
+  <Step title="Make a slug">
+
+```ts ts2js index.ts
+import { slugify } from 'tsdown-kit'
+
+console.log(slugify('My First Blog Post!')) // 'my-first-blog-post'
+```
+
+  </Step>
+  <Step title="Change the output">
+    Pass options as the second argument. Each one is optional.
+
+```ts ts2js index.ts
+slugify('My First Blog Post!', { separator: '_' }) // 'my_first_blog_post'
+slugify('My First Blog Post!', { lowercase: false }) // 'My-First-Blog-Post'
+slugify('My First Blog Post!', { maxLength: 8 }) // 'my-first'
+```
+
+  </Step>
+</Steps>
+
+{/* /kit:library */}
+{/* kit:cli */}
+
+## From the command line
+
+<Steps>
+  <Step title="Slugify an argument">
+
+```sh
+npx tsdown-kit "My First Blog Post!"
+# my-first-blog-post
+```
+
+  </Step>
+  <Step title="Slugify piped lines">
+    Each line of input gives one line of output. Empty lines are skipped.
+
+```sh
+printf 'First post\nSecond Post\n' | npx tsdown-kit
+# first-post
+# second-post
+```
+
+  </Step>
+  <Step title="Change the output">
+
+```sh
+npx tsdown-kit --separator _ --max-length 12 --keep-case "Hello Big World"
+# Hello_Big_Wo
+```
+
+  </Step>
+</Steps>
+
+{/* /kit:cli */}
+
+## Next steps
+
+<CardGroup cols={2}>
+  {/* kit:library */}
+  <Card title="Library guide" href="/guides/library" icon="code">
+    All options, with the rules for each one.
+  </Card>
+  {/* /kit:library */}
+  {/* kit:cli */}
+  <Card title="CLI guide" href="/guides/cli" icon="terminal">
+    Use the CLI in scripts and pipelines.
+  </Card>
+  {/* /kit:cli */}
+  <Card title="How it works" href="/guides/how-it-works" icon="workflow">
+    The steps that turn text into a slug.
+  </Card>
+</CardGroup>

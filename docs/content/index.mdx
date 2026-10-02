@@ -1,0 +1,64 @@
+---
+title: Introduction
+description: 'tsdown-kit turns any text into a clean slug for URLs, file names, and ids, from TypeScript code or from the command line.'
+icon: house
+---
+
+`tsdown-kit` turns any text into a slug: a short, lowercase string with only letters, digits, and a separator.
+It removes accents, keeps letters from every script, and never leaves a separator at the end.
+
+{/* kit:library */}
+
+```ts ts2js
+import { slugify } from 'tsdown-kit'
+
+slugify('Héllo, Wörld!') // 'hello-world'
+slugify('Crème brûlée recipe', { maxLength: 12 }) // 'creme-brulee'
+```
+
+{/* /kit:library */}
+{/* kit:cli */}
+
+```sh
+npx tsdown-kit "Héllo, Wörld!"   # hello-world
+```
+
+{/* /kit:cli */}
+
+## Why tsdown-kit
+
+<CardGroup cols={2}>
+  <Card title="Every script" icon="languages">
+    Accents go away (`é` → `e`), but Cyrillic, Greek, CJK, and other letters stay. No lossy transliteration tables.
+  </Card>
+  <Card title="Safe cuts" icon="scissors">
+    `maxLength` never leaves a separator at the end and never splits a character in two.
+  </Card>
+  <Card title="No dependencies" icon="package">
+    The package has no runtime dependencies. It is ESM only and ships its own TypeScript types.
+  </Card>
+  <Card title="Ready for agents" icon="bot">
+    The package ships an agent skill, so coding agents learn its API from `node_modules`.
+  </Card>
+</CardGroup>
+
+## Start here
+
+<CardGroup cols={2}>
+  <Card title="Installation" href="/getting-started/installation" icon="download">
+    Requirements and the install command for your package manager.
+  </Card>
+  <Card title="Quickstart" href="/getting-started/quickstart" icon="rocket">
+    Make your first slug in two minutes.
+  </Card>
+  {/* kit:library */}
+  <Card title="Library guide" href="/guides/library" icon="code">
+    Separators, letter case, length limits, and errors.
+  </Card>
+  {/* /kit:library */}
+  {/* kit:cli */}
+  <Card title="CLI guide" href="/guides/cli" icon="terminal">
+    Arguments, piped input, options, and exit codes.
+  </Card>
+  {/* /kit:cli */}
+</CardGroup>

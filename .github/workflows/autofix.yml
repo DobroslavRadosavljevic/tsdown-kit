@@ -37,7 +37,7 @@ jobs:
       # Errors that `--fix` cannot fix stay for the CI job to report. This job only commits fixes.
       # It does not run the build: API snapshot changes need a person to review them.
       - run: bun run lint:fix || true
-      - run: bun run docs
+      - run: bun run readme
       - run: bun run format
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4
